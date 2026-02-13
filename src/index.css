@@ -1,0 +1,160 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@layer base {
+  :root {
+    --background: 150 20% 98%;
+    --foreground: 160 30% 8%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 160 30% 8%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 160 30% 8%;
+
+    --primary: 160 84% 39%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 160 20% 94%;
+    --secondary-foreground: 160 30% 15%;
+
+    --muted: 150 15% 93%;
+    --muted-foreground: 160 10% 45%;
+
+    --accent: 36 95% 55%;
+    --accent-foreground: 36 95% 12%;
+
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 150 15% 88%;
+    --input: 150 15% 88%;
+    --ring: 160 84% 39%;
+
+    --radius: 0.75rem;
+
+    --sidebar-background: 160 30% 8%;
+    --sidebar-foreground: 150 15% 90%;
+    --sidebar-primary: 160 84% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 160 25% 15%;
+    --sidebar-accent-foreground: 150 15% 90%;
+    --sidebar-border: 160 20% 18%;
+    --sidebar-ring: 160 84% 50%;
+
+    --code-bg: 220 20% 14%;
+    --code-foreground: 150 60% 70%;
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 100%;
+    --warning: 36 95% 55%;
+    --warning-foreground: 36 95% 12%;
+    --info: 210 80% 55%;
+    --info-foreground: 0 0% 100%;
+
+    --gradient-hero: linear-gradient(135deg, hsl(160 84% 39%), hsl(170 80% 32%), hsl(190 75% 38%));
+    --gradient-accent: linear-gradient(135deg, hsl(36 95% 55%), hsl(28 90% 50%));
+    --gradient-code: linear-gradient(135deg, hsl(220 20% 14%), hsl(230 25% 10%));
+    --shadow-soft: 0 4px 24px -4px hsl(160 84% 39% / 0.12);
+    --shadow-card: 0 2px 12px -2px hsl(160 30% 8% / 0.08);
+    --shadow-elevated: 0 12px 40px -8px hsl(160 30% 8% / 0.15);
+  }
+
+  .dark {
+    --background: 220 20% 7%;
+    --foreground: 150 15% 93%;
+
+    --card: 220 18% 11%;
+    --card-foreground: 150 15% 93%;
+
+    --popover: 220 18% 11%;
+    --popover-foreground: 150 15% 93%;
+
+    --primary: 160 80% 50%;
+    --primary-foreground: 220 20% 7%;
+
+    --secondary: 220 15% 16%;
+    --secondary-foreground: 150 15% 90%;
+
+    --muted: 220 15% 16%;
+    --muted-foreground: 150 10% 55%;
+
+    --accent: 36 90% 55%;
+    --accent-foreground: 36 95% 12%;
+
+    --destructive: 0 62% 30%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 15% 20%;
+    --input: 220 15% 20%;
+    --ring: 160 80% 50%;
+
+    --sidebar-background: 220 22% 6%;
+    --sidebar-foreground: 150 15% 90%;
+    --sidebar-primary: 160 80% 50%;
+    --sidebar-primary-foreground: 220 20% 7%;
+    --sidebar-accent: 220 18% 14%;
+    --sidebar-accent-foreground: 150 15% 90%;
+    --sidebar-border: 220 15% 16%;
+    --sidebar-ring: 160 80% 50%;
+
+    --code-bg: 220 25% 8%;
+    --code-foreground: 160 60% 65%;
+    --success: 142 76% 42%;
+    --success-foreground: 0 0% 100%;
+    --shadow-soft: 0 4px 24px -4px hsl(160 80% 50% / 0.08);
+    --shadow-card: 0 2px 12px -2px hsl(0 0% 0% / 0.3);
+    --shadow-elevated: 0 12px 40px -8px hsl(0 0% 0% / 0.4);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
+  }
+}
+
+@layer utilities {
+  .text-gradient-hero {
+    background: var(--gradient-hero);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .bg-gradient-hero {
+    background: var(--gradient-hero);
+  }
+
+  .bg-gradient-accent {
+    background: var(--gradient-accent);
+  }
+
+  .bg-gradient-code {
+    background: var(--gradient-code);
+  }
+
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .shadow-card {
+    box-shadow: var(--shadow-card);
+  }
+
+  .shadow-elevated {
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .glass {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+}
