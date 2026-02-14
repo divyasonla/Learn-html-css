@@ -3,11 +3,6 @@ import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import { useToast } from '../hooks/use-toast';
-import { analytics } from '../firebaseConfig';
-import { logEvent } from 'firebase/analytics';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getAuth } from 'firebase/auth';
-import { FcGoogle } from "react-icons/fc";
 
 const LoginPage: React.FC = () => {
   const { register, handleSubmit, formState: { errors } } = useForm();
@@ -21,24 +16,8 @@ const LoginPage: React.FC = () => {
     if (error) {
       toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
     } else {
-      logEvent(analytics, 'login', { method: 'password' });
       toast({ title: 'Login successful', description: 'Welcome back!', variant: 'success' });
       navigate('/dashboard');
-    }
-  };
-
-  const handleGoogleLogin = async () => {
-    const auth = getAuth();
-    const provider = new GoogleAuthProvider();
-
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      logEvent(analytics, 'login', { method: 'google' });
-      toast({ title: 'Login successful', description: `Welcome, ${user.displayName}!`, variant: 'success' });
-      navigate('/dashboard');
-    } catch (error) {
-      toast({ title: 'Login failed', description: error.message, variant: 'destructive' });
     }
   };
 
@@ -87,16 +66,6 @@ const LoginPage: React.FC = () => {
             </a>
           </p>
         </div>
-
-        <div className="mt-4">
-  <button
-    onClick={handleGoogleLogin}
-    className="w-full bg-blue-600 text-white py-2 px-4 rounded flex items-center justify-center gap-2 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2"
-  >
-    {/* <FcGoogle /> */}
-    Login with Google
-  </button>
-</div>
       </form>
     </div>
   );

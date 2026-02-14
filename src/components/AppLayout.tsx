@@ -3,7 +3,6 @@ import { Link, useLocation } from "react-router-dom";
 import { BookOpen, Code2, Trophy, ChevronDown, ChevronRight, Home, Hammer, Menu, X, CheckCircle2, Lock } from "lucide-react";
 import { htmlCourse, cssCourse, getAllLessons } from "@/data/courseData";
 import { useProgress } from "@/hooks/useProgress";
-import { getAuth, signOut } from "firebase/auth";
 
 const AppLayout = ({ children }: { children: React.ReactNode }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -87,7 +86,6 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
             <Link to="/practice" className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${isActive("/practice") ? "bg-primary/10 text-primary" : "text-muted-foreground hover:text-foreground hover:bg-muted"}`}>
               Practice
             </Link>
-            {/* <LogoutButton className="fixed bottom-4 left-4" /> */}
           </nav>
         </div>
       </header>
@@ -111,12 +109,7 @@ const AppLayout = ({ children }: { children: React.ReactNode }) => {
           <div className="sticky bottom-0 w-full p-3 bg-sidebar"> {/* Changed to sticky to fix the button at the bottom */}
             <button
               onClick={() => {
-                const auth = getAuth();
-                signOut(auth).then(() => {
-                  window.location.href = '/login';
-                }).catch((error) => {
-                  console.error('Logout failed:', error);
-                });
+                window.location.href = '/login';
               }}
               className="w-full px-3 py-2 rounded-md text-sm font-medium bg-red-500 text-white hover:bg-red-600 transition-colors"
             >
