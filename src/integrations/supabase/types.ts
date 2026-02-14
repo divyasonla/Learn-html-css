@@ -153,3 +153,14 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+export type AIQuestion = {
+  question: string;
+  options: string[];
+  correctIndex: number;
+  explanation: string;
+  difficulty: "easy" | "medium" | "hard";
+  type: "mcq" | "true-false" | "fill-blank" | "code";
+};
+
+export { AIQuestion };

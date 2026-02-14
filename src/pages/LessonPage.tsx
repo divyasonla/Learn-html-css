@@ -4,15 +4,20 @@ import CodeEditor from "@/components/CodeEditor";
 import Quiz from "@/components/Quiz";
 import { htmlCourse, cssCourse, findLesson, getNextLesson, getAllLessons } from "@/data/courseData";
 import ReactMarkdown from "react-markdown";
-import { ChevronLeft, ChevronRight, CheckCircle2, Lock } from "lucide-react";
+import { ChevronLeft, ChevronRight, CheckCircle2, Lock, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useProgress } from "@/hooks/useProgress";
+import { supabase } from "@/integrations/supabase/client";
+import { AIQuestion } from "@/integrations/supabase/types";
 
 const LessonPage = () => {
   const { courseId, lessonId } = useParams<{ courseId: string; lessonId: string }>();
   const course = courseId === "css" ? cssCourse : htmlCourse;
   const result = findLesson(course, lessonId || "");
   const [showQuiz, setShowQuiz] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState<AIQuestion[]>([]);
+  const [loadingQuiz, setLoadingQuiz] = useState(false);
+  const [quizError, setQuizError] = useState("");
   const { completeLesson, saveQuizScore, isLessonCompleted, isQuizPassed, getQuizScore } = useProgress();
 
   if (!result) {
@@ -33,7 +38,6 @@ const LessonPage = () => {
   const allLessons = getAllLessons(course);
   const lessonIndex = allLessons.findIndex((l) => l.id === lesson.id);
 
-  // Check if lesson is locked (previous lesson quiz not passed)
   const isFirstLesson = lessonIndex === 0;
   const previousLesson = lessonIndex > 0 ? allLessons[lessonIndex - 1] : null;
   const isLocked = !isFirstLesson && previousLesson && !isQuizPassed(previousLesson.id);
@@ -65,12 +69,45 @@ const LessonPage = () => {
   const quizScore = getQuizScore(lesson.id);
   const lessonDone = isLessonCompleted(lesson.id);
 
-  const handleQuizComplete = (score: number, total: number) => {
-    saveQuizScore(lesson.id, score, total);
-    if (score >= Math.ceil(total * 0.6)) {
-      completeLesson(lesson.id);
+  // Define a wrapper function for fetchQuiz
+  const handleFetchQuiz = () => {
+    console.log("handleFetchQuiz triggered with topic:", lesson.title);
+    fetchQuiz(lesson.title);
+  };
+
+  const fetchQuiz = async (topicId: string) => {
+    console.log("fetchQuiz called with topicId:", topicId);
+    setLoadingQuiz(true);
+    setQuizError("");
+    try {
+      const { data, error: fnError } = await supabase.functions.invoke("generate-quiz", {
+        body: { topic: topicId, courseType: courseId.toUpperCase() },
+      });
+
+      console.log("Supabase response:", data, fnError);
+
+      if (fnError) {
+        throw new Error(fnError.message);
+      }
+
+      if (!data?.questions?.length) {
+        throw new Error("No questions generated. Please verify the Edge Function logic.");
+      }
+
+      setQuizQuestions(data.questions);
+      setShowQuiz(true);
+    } catch (error) {
+      console.error("Error in fetchQuiz:", error);
+      setQuizError(error.message);
+    } finally {
+      setLoadingQuiz(false);
     }
   };
+
+  const handleQuizStart = () => {
+    setShowQuiz(true);
+    if (!quizQuestions.length) fetchQuiz(lesson.title);
+  };``
 
   return (
     <AppLayout>
@@ -121,29 +158,44 @@ const LessonPage = () => {
         {/* Quiz Section */}
         <section className="mb-10">
           <div className="bg-card rounded-xl p-6 shadow-card border border-border/50">
-            {quizPassed && quizScore ? (
+            {loadingQuiz ? (
               <div className="text-center py-4">
-                <CheckCircle2 className="w-12 h-12 text-success mx-auto mb-2" />
-                <h2 className="text-xl font-display font-semibold mb-1">Quiz Passed! ✅</h2>
-                <p className="text-muted-foreground">
-                  Score: {quizScore.score}/{quizScore.total}
-                </p>
+                <Loader2 className="w-10 h-10 text-primary animate-spin mx-auto mb-2" />
+                <p className="text-muted-foreground">Generating your quiz...</p>
               </div>
-            ) : !showQuiz ? (
+            ) : quizError ? (
+              <div className="text-center py-4">
+                <p className="text-destructive">{quizError}</p>
+                <button
+                  onClick={handleFetchQuiz}
+                  className="px-6 py-2.5 rounded-lg bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            ) : showQuiz && quizQuestions.length ? (
+              <Quiz
+                questions={quizQuestions}
+                onComplete={(score, total) => {
+                  saveQuizScore(lesson.id, score, total);
+                  if (score >= Math.ceil(total * 0.6)) completeLesson(lesson.id);
+                }}
+                lessonTitle={lesson.title}
+                courseType={courseId === "css" ? "CSS" : "HTML"}
+              />
+            ) : (
               <div className="text-center py-4">
                 <h2 className="text-xl font-display font-semibold mb-2">🧪 Quiz Time!</h2>
                 <p className="text-muted-foreground mb-4">
-                  Test your knowledge with {lesson.quiz.length} questions. Score 60% to unlock the next lesson.
+                  Test your knowledge with dynamically generated questions. Score 60% to unlock the next lesson.
                 </p>
                 <button
-                  onClick={() => setShowQuiz(true)}
+                  onClick={handleFetchQuiz}
                   className="px-6 py-2.5 rounded-lg bg-gradient-hero text-primary-foreground font-medium shadow-soft hover:shadow-elevated transition-all hover:-translate-y-0.5"
                 >
                   Start Quiz
                 </button>
               </div>
-            ) : (
-              <Quiz questions={lesson.quiz} onComplete={handleQuizComplete} />
             )}
           </div>
         </section>

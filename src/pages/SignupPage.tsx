@@ -1,48 +1,115 @@
-import React from "react";
+import { useState } from "react";
+import { useQuizAuth } from "@/hooks/useQuizAuth";
+import { Eye, EyeOff, UserPlus } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 const SignupPage = () => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const { signup } = useQuizAuth();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email || !password) {
+      setError("Email and password are required.");
+      return;
+    }
+
+    if (password.length < 6) {
+      setError("Password must be at least 6 characters long.");
+      return;
+    }
+
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+    });
+
+    console.log("Signup Response:", error);
+
+    if (error) {
+      setError(error.message);
+    } else {
+      toast({
+        title: "Signup successful",
+        description: "You can now log in.",
+      });
+      navigate("/login");
+    }
+  };
+
   return (
-    <div className="flex items-center justify-center min-h-screen bg-card">
-      <form className="bg-white p-8 rounded-lg shadow-card w-full max-w-md border border-border/50">
-        <h2 className="text-3xl font-display font-bold text-center text-foreground mb-6">Create an Account</h2>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <div className="w-full max-w-md bg-card p-6 rounded-2xl shadow-elevated border border-border/50">
+        <h1 className="text-3xl font-bold text-center mb-6">Create Account</h1>
 
-        <div className="mb-4">
-          <label htmlFor="email" className="block text-sm font-medium text-foreground">Email Address</label>
-          <input
-            id="email"
-            type="email"
-            className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg py-3 px-4 sm:text-lg"
-          />
-        </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="text-sm font-medium block mb-1">Name</label>
+            <input
+              type="text"
+              required
+              value={name}
+              onChange={e => setName(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-lg border border-input"
+            />
+          </div>
 
-        <div className="mb-4">
-          <label htmlFor="password" className="block text-sm font-medium text-foreground">Password</label>
-          <input
-            id="password"
-            type="password"
-            className="mt-1 block w-full border-border rounded-md shadow-sm focus:ring-primary focus:border-primary text-lg py-3 px-4 sm:text-lg"
-          />
-        </div>
+          <div>
+            <label className="text-sm font-medium block mb-1">Email</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className="w-full px-4 py-2.5 rounded-lg border border-input"
+            />
+          </div>
 
-        <button
-          type="submit"
-          className="w-full bg-primary text-white py-2 px-4 rounded hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
-        >
-          Sign Up
-        </button>
+          <div>
+            <label className="text-sm font-medium block mb-1">Password</label>
+            <div className="relative">
+              <input
+                type={showPassword ? "text" : "password"}
+                required
+                minLength={6}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                className="w-full px-4 py-2.5 rounded-lg border border-input pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2"
+              >
+                {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+              </button>
+            </div>
+          </div>
 
-        <div className="mt-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{' '}
-            <a
-              href="/login"
-              className="text-primary hover:underline"
-            >
-              Login here
-            </a>
-          </p>
-        </div>
-      </form>
+          {error && <p className="text-sm text-destructive">{error}</p>}
+
+          <button className="w-full py-3 bg-primary text-white rounded-lg font-semibold">
+            <UserPlus className="inline mr-2" size={18}/>
+            Sign Up
+          </button>
+        </form>
+
+        <p className="text-sm text-center mt-4">
+          Already have an account? <a href="/login" className="text-primary font-medium">Login</a>
+        </p>
+      </div>
     </div>
   );
 };

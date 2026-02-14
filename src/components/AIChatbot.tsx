@@ -7,6 +7,11 @@ type Message = { role: "user" | "assistant"; content: string };
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`;
 
 const AIChatbot = () => {
+  if (!CHAT_URL) {
+    console.error("CHAT_URL is not defined. Check your environment variables.");
+    return null; // Prevent rendering if CHAT_URL is undefined
+  }
+
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
@@ -33,7 +38,11 @@ const AIChatbot = () => {
 
     let assistantSoFar = "";
 
+    // Add detailed logging to debug the fetch request
     try {
+      console.log("Sending request to CHAT_URL:", CHAT_URL);
+      console.log("Request payload:", { messages: [...messages, userMsg] });
+
       const resp = await fetch(CHAT_URL, {
         method: "POST",
         headers: {
@@ -43,14 +52,13 @@ const AIChatbot = () => {
         body: JSON.stringify({ messages: [...messages, userMsg] }),
       });
 
-      if (!resp.ok || !resp.body) {
-        const err = await resp.json().catch(() => ({ error: "Request failed" }));
-        setMessages((prev) => [
-          ...prev,
-          { role: "assistant", content: `❌ ${err.error || "Something went wrong. Try again."}` },
-        ]);
-        setLoading(false);
-        return;
+      console.log("Response status:", resp.status);
+      console.log("Response headers:", resp.headers);
+
+      if (!resp.ok) {
+        const errorDetails = await resp.json().catch(() => ({ error: "Unknown error" }));
+        console.error("Error response from server:", errorDetails);
+        throw new Error(errorDetails.error || "Failed to fetch response from the server.");
       }
 
       const reader = resp.body.getReader();
@@ -123,10 +131,11 @@ const AIChatbot = () => {
           } catch { /* ignore */ }
         }
       }
-    } catch {
+    } catch (error) {
+      console.error("Error in sendMessage:", error);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: "❌ Network error. Please try again." },
+        { role: "assistant", content: `❌ ${error.message}` },
       ]);
     }
 
